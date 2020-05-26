@@ -21,3 +21,8 @@ steps:
     npm run build --if-present
     npm run test --if-present
   displayName: 'npm install, build and test'
+
+- task: CopyFiles@2
+  inputs:
+    targetFolder: '$(Build.ArtifactStagingDirectory)'    
+- task: PublishBuildArtifacts@1
