@@ -1,162 +1,45 @@
-# ---------------------------------------------------------------------------------------------------------------------
-# Azure Pipeline for building and testing Feathers Server using Node.js Express Web App on Azure Linux.
-#
-# - uses templates found in `.azure-templates/`
-# - requires installing https://marketplace.visualstudio.com/acquisition?itemName=mspremier.BuildQualityChecks
-#
-# More information about the Azure Pipelines YAML schema used in this file at https://aka.ms/yaml
-# ---------------------------------------------------------------------------------------------------------------------
+# Node.js
+# Build a general Node.js project with npm.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
 
-
-# Name of our build, the GitVersion variable will be replaced during one of the steps
-name: $(Build.DefinitionName) $(GitVersion_SemVer)
-
-# Determines which branch(es) will cause a CI build to be started
 trigger:
 - master
 
-variables:
+pool:
+  vmImage: 'ubuntu-latest'
 
-  # Azure Resource Manager connection created during pipeline creation
-  azureSubscription: '0b70aafa-a021-4922-be10-eff3c55d230f'
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '10.x'
+  displayName: 'Install Node.js'
 
-  # Web app name
-  webAppName: 'p2server'
+- script: |
+    npm install
+    npm run build
+  displayName: 'npm install and build'
 
-  # Agent VM image name
-  vmImageName: 'ubuntu-latest'
+- script: |
+    npm pack
+  displayName: 'Package for npm release'
 
-  # MySQL
-  MYSQL_DATABASE_NAME: ci_test
-  FEATHERS_DATABASE_CONNECTION_STRING: mysql://root:root@localhost/$(MYSQL_DATABASE_NAME)
+- task: CopyFiles@2
+  inputs:
+    sourceFolder: '$(Build.SourcesDirectory)'
+    contents: '*.tgz' 
+    targetFolder: $(Build.ArtifactStagingDirectory)/npm
+  displayName: 'Copy npm package'
 
-stages:
+- task: CopyFiles@2
+  inputs:
+    sourceFolder: '$(Build.SourcesDirectory)'
+    contents: 'package.json' 
+    targetFolder: $(Build.ArtifactStagingDirectory)/npm
+  displayName: 'Copy package.json'
 
-- stage: Configure
-  jobs:
-
-  # ---------------------------------------------------------------------------
-  # Gitversion
-  # ---------------------------------------------------------------------------
-  - job: GitVersion
-    displayName: GitVersion
-    pool:
-      vmImage: $(vmImageName)
-    steps:
-    - template: .azure-templates/step-gitversion.yml
-
-- stage: Validate
-  jobs:
-
-  # ---------------------------------------------------------------------------
-  # Lint
-  # ---------------------------------------------------------------------------
-  - job: Lint
-    displayName: Linting
-    pool:
-      vmImage: $(vmImageName)
-    steps:
-    - template: .azure-templates/step-install.yml
-
-    - script: |
-        npm run eslint
-      displayName: npm run eslint
-  # ---------------------------------------------------------------------------
-  # Database Migration
-  # ---------------------------------------------------------------------------
-  - job: Migration
-    displayName: Database Migrations
-    pool:
-      vmImage: $(vmImageName)
-    steps:
-    - template: .azure-templates/step-install.yml
-    - template: .azure-templates/step-database-migrations.yml
-
-  # ---------------------------------------------------------------------------
-  # Test
-  # ---------------------------------------------------------------------------
-  - job: Test
-    displayName: Tests
-    dependsOn: Migration
-    pool:
-      vmImage: $(vmImageName)
-    steps:
-    - template: .azure-templates/step-install.yml
-    - template: .azure-templates/step-database-migrations.yml
-
-    - script: |
-        npx nyc --reporter cobertura --report-dir $(System.DefaultWorkingDirectory)/coverage npm run mocha -- --reporter mocha-junit-reporter
-      displayName: Run mocha tests with nyc
-    - task: PublishTestResults@2
-      condition: succeededOrFailed()
-      inputs:
-        testRunner: JUnit
-        testResultsFiles: $(System.DefaultWorkingDirectory)/test-results.xml
-
-    - task: PublishBuildArtifacts@1
-      inputs:
-        pathtoPublish: $(System.DefaultWorkingDirectory)/test-results.xml
-        artifactName: Test Results
-
-    - task: PublishBuildArtifacts@1
-      inputs:
-        pathtoPublish: $(System.DefaultWorkingDirectory)/coverage/cobertura-coverage.xml
-        artifactName: Coverage Results
-
-  # ---------------------------------------------------------------------------
-  # Coverage
-  # ---------------------------------------------------------------------------
-  - job: Coverage
-    displayName: Coverage
-    dependsOn: Test
-    pool:
-      vmImage: $(vmImageName)
-    steps:
-    - task: DownloadBuildArtifacts@0
-      inputs:
-        artifactName: Coverage Results
-        downloadPath: $(System.DefaultWorkingDirectory)
-
-    - task: PublishCodeCoverageResults@1
-      inputs:
-        codeCoverageTool: Cobertura
-        summaryFileLocation: '$(System.DefaultWorkingDirectory)/Coverage Results/cobertura-coverage.xml'
-        failIfCoverageEmpty: true
-
-    # https://github.com/MicrosoftPremier/VstsExtensions/blob/master/BuildQualityChecks/en-US/CodeCoveragePolicy.md
-    - task: mspremier.BuildQualityChecks.QualityChecks-task.BuildQualityChecks@6
-      displayName: Build Quality Checks
-      inputs:
-        checkCoverage: true
-        coverageType: lines
-        checkWarnings: false
-        showStatistics: true
-        coverageFailOption: build # fail when coverage falls below previous build
-        forceCoverageImprovement: true # coverage must always have higher than previous coverage
-        coverageUpperThreshold: 80 # fail if coverage drops below this percentage
-        ignoreDecreaseAboveUpperThreshold: false # fail if coverage drops (even when still above upper range)
-        explicitFilter: true
-        baseDefinitionId: 33
-        baseBranchRef: refs/heads/master
-
-- stage: Publish
-  jobs:
-
-  # ---------------------------------------------------------------------------
-  # Publish the Feathers Server artifact
-  # ---------------------------------------------------------------------------
-  - job: Publish
-    displayName: Feathers Deployment Artifact
-    pool:
-      vmImage: $(vmImageName)
-    steps:
-    - script: |
-        cd $(System.DefaultWorkingDirectory)
-        zip -r deploy.zip ./ -x ".azure-templates/*"  -x ".git/*" -x "node_modules/*" -x "test/*" -x ".eslintrc.json" -x ".gitignore" -x "azure-pipelines.yml"
-      displayName: Create deployment zip file
-    - task: PublishBuildArtifacts@1
-      inputs:
-        pathtoPublish: $(System.DefaultWorkingDirectory)/deploy.zip
-        artifactName: Feathers Deployment Package
-@jrowbotham93
- 
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)/npm'
+    artifactName: npm
+  displayName: 'Publish npm artifact'
