@@ -16,31 +16,7 @@ steps:
   displayName: 'Install Node.js'
 
 - script: |
-    cd feathers-app
     npm install
-    npm run build
-  displayName: 'npm install and build'
-
-- script: |
-    npm pack
-  displayName: 'Package for npm release'
-
-- task: CopyFiles@2
-  inputs:
-    sourceFolder: '$(Build.SourcesDirectory)'
-    contents: '*.tgz' 
-    targetFolder: $(Build.ArtifactStagingDirectory)/npm
-  displayName: 'Copy npm package'
-
-- task: CopyFiles@2
-  inputs:
-    sourceFolder: '$(Build.SourcesDirectory)'
-    contents: 'package.json' 
-    targetFolder: $(Build.ArtifactStagingDirectory)/npm
-  displayName: 'Copy package.json'
-
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)/npm'
-    artifactName: npm
-  displayName: 'Publish npm artifact'
+    npm run build --if-present
+    npm run test --if-present
+  displayName: 'npm install, build and test'
