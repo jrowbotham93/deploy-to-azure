@@ -1,3 +1,5 @@
+[![Build Status](https://dev.azure.com/jamesrowbotham2/test/_apis/build/status/jargon-generator%20-%20CI?branchName=master)](https://dev.azure.com/jamesrowbotham2/test/_build/latest?definitionId=3&branchName=master)
+
 # deploy
 
 > 
