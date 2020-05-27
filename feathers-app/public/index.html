@@ -4,6 +4,7 @@
     <title>Business jargon generator</title>
     <link rel="stylesheet" href="index.css">
     <body>
+
     <main class="flex center align height-100">
         <div class="flex center align column">
             <h1 class="font-general">Business jargon generator</h1>
@@ -13,11 +14,18 @@
               <input type="email" name="field" id="field" required>
             </div>
             <div class="form-example">
-              <input type="submit" value="generate jargon!">
+              <input type="submit" value="generate jargon!" onclick="createJargonString(imperative,
+              subject,
+              jargonVerbs,
+              linking,
+              jargonNouns,
+              verb)">
             </div>
+            <output></output>
           </form>
-          <div class="flex center font-general white">Output</div>
         </div>
     </main>
   </body>
+  <script src="app.js"></script>
+
 </html>

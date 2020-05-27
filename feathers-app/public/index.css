@@ -1,11 +1,13 @@
 body {
-  background-color: #000000;
-  color: white;
-  font-family: "Courier New", Courier, monospace;
+  background-color: #ffffff;
+  font-family: Akzidenz Grotesk BQ Light, Helvetica;
+  color: #42494f;
+  font-size: 16px;
 }
 
 .font-general {
-  font-family: "Courier New", Courier, monospace;
+  font-family: Akzidenz Grotesk BQ Light, Helvetica;
+  color: #42494f;
 }
 
 .white {
