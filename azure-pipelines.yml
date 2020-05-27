@@ -22,5 +22,6 @@ steps:
   displayName: 'npm install, build and test'
 
 - task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: drop'
   inputs:
-    PathtoPublish: '$(System.DefaultWorkingDirectory)'
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)\ArtifactsToBePublished'
