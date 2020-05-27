@@ -2,8 +2,8 @@
 // See http://mongoosejs.com/docs/models.html
 // for more of what you can do here.
 module.exports = function(app) {
-  const modelName = "words";
-  const mongooseClient = app.get("mongooseClient");
+  const modelName = 'words';
+  const mongooseClient = app.get('mongooseClient');
   const { Schema } = mongooseClient;
   const schema = new Schema(
     {
