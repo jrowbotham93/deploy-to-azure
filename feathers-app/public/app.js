@@ -43,9 +43,6 @@ function createJargonString(
   let randomLinking = randomSelection(linking);
   let randomSubject = randomSelection(subject);
   let randomImperative = randomSelection(imperative);
-  console.log(
-    `${randomSubject} ${randomImperative} ${randomJargonVerbs} ${randomLinking} ${randomVerbs} ${randomJargonNouns}`
-  );
 
   let jargonString = `${randomSubject} ${randomImperative} ${randomJargonVerbs} ${randomLinking} ${randomVerbs} ${randomJargonNouns}`;
   return displayContent(jargonString, "output");
