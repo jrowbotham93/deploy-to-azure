@@ -7,7 +7,7 @@ const jargonVerbs = [
   "deep dive"
 ];
 const subject = ["We", "The team", "I"];
-const imperative = ["should", "must", "need to"];
+const imperative = ["should", "must", "need"];
 const linking = ["In order to", "so we can"];
 const verb = ["obtain", "acquire", "get", "become"];
 const jargonNouns = [
