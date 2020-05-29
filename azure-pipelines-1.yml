@@ -37,7 +37,9 @@ stages:
 
     - script: |
         cd feathers-app
-        npm install
+        npm install --if-present
+        npm cache clean
+        sudo npm install -g npm
         npm run build --if-present
       displayName: 'npm install, build and test'
       
