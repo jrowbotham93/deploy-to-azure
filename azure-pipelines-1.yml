@@ -36,7 +36,6 @@ stages:
       displayName: 'Install Node.js'
 
     - script: |
-        cd feathers-app
         npm install --if-present
         npm cache clean
         sudo npm install -g npm
